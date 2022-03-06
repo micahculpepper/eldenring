@@ -33,6 +33,7 @@ PRIORITY=3
 MESSAGE=Failed to bring interfaces online
 $MESSAGES
 EOF
+		exit 1
 	else
 		logger --journald <<EOF
 SYSLOG_IDENTIFIER=$SYSLOG_IDENTIFIER
@@ -56,11 +57,17 @@ SYSLOG_IDENTIFIER=$SYSLOG_IDENTIFIER
 PRIORITY=6
 MESSAGE=Taking interface(s) offline for $NETWORK_RESTORE_DELAY seconds: $active_ifs
 EOF
-	if ! $(ifdown $active_ifs); then
+	res=$(2>&1 ifdown $active_ifs)
+	if ! $?; then
+		MESSAGES=""
+		if [ -n "$res" ]; then
+			MESSAGES=$(echo "$res" | awk '{print "MESSAGE=" $0}')
+		fi
 		logger --journald <<EOF
 SYSLOG_IDENTIFIER=$SYSLOG_IDENTIFIER
 PRIORITY=3
 MESSAGE=Failed to take interface(s) offline
+$MESSAGES
 EOF
 		exit 1
 	else
