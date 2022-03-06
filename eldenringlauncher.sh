@@ -43,7 +43,7 @@ EOF
 	fi
 }
 
-active_ifs=ifactive()
+active_ifs=$(ifactive)
 
 if [ -z "$active_ifs" ]; then
 	logger --journald <<EOF
